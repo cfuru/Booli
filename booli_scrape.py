@@ -114,7 +114,7 @@ class BooliApartments:
         html_lists = soup.find_all('li', class_ = 'search-list__item')
         return html_lists
 
-    def sleeper(self, seconds = random.randint(3,5), i = -1):
+    def sleeper(self, seconds, i = -1):
         start_time = time.time()
         if i != -1:
             print(f'Sleep time in seconds: {seconds}')
@@ -201,13 +201,6 @@ class BooliApartmentsGranular(BooliApartments):
     
     def __init__(self):
         BooliApartments.__init__(self)
-        self.df_col_price_change = 'PriceChangeInSek'
-        self.df_col_days_on_booli = 'DaysOnBooli'
-        self.df_col_floor_number = 'FloorNumber'
-        self.df_col_monthly_charge = 'MonthlyCharge'
-        self.df_col_type = 'Type'
-        self.df_col_built_year = 'BuiltYear'
-        self.df_col_brf = 'BRF'
 
     def scrape_html_apartments_granular(self, link):
         '''
@@ -230,7 +223,23 @@ class BooliApartmentsGranular(BooliApartments):
         df[self.df_col_link] = object_link
         return df 
 
-    def clean_df_col_monthlyCharge_floorNumber(self, df):
+    def clean_df_col_monthlyCharge_operatingCost_floorNumber(self, df, cols = ['Avgift', 'Driftskostnad', 'Våning']):
         chars_to_remove = [' kr/mån', 'tr']
-        df = self.clean_df_col(df, chars_to_remove, [self.df_col_monthly_charge, self.df_col_floor_number])
+        for col in cols:
+            try:
+                df = self.clean_df_col(df, chars_to_remove, col)
+            except:
+                pass
+        return df
+
+    def clean_df_col_floorNumber(self, df, col = 'Våning'):
+        try:
+            df[col] = df[col].replace('½', '0.5')
+            df[col] = df[col].replace('BV', '0')
+            new = df[col].str.split('½', 1, expand = True)
+            new = new.fillna(0)
+            new = new.apply(pd.to_numeric, errors = 'coerce')
+            df[col] = new[0] + new[1]
+        except:
+            pass
         return df
