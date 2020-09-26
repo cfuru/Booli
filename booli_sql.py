@@ -135,15 +135,16 @@ class soldApartmentsDetails(soldApartments):
     
     def __init__(self):
         soldApartments.__init__(self)
-        self.table_name_apartments_details = 'SoldApartmentDetails'
+        self.table_name_apartments_details = 'SoldApartmentsDetails'
         self.create_table_details_query = f"""
                         CREATE TABLE {self.schema + '.[' + self.table_name_apartments_details + ']'}
                         (
                             ApartmentDetailId		INT IDENTITY(1,1) PRIMARY KEY,
-                            MonthlyChargeInSek		MONEY NOT NULL,
-                            FloorNumber				DECIMAL(9,2) NOT NULL,
-                            BuiltYear				INT NOT NULL,
-                            Association				VARCHAR(100) NOT NULL,
+                            MonthlyChargeInSek		MONEY NULL,
+                            OperatingCostInSek      MONEY NULL,
+                            FloorNumber				DECIMAL(9,2) NULL,
+                            BuiltYear				INT NULL,
+                            Association				VARCHAR(100) NULL,
                             ObjectLink				VARCHAR(100) NOT NULL
                         );"""
 
@@ -151,10 +152,11 @@ class soldApartmentsDetails(soldApartments):
                         CREATE TABLE #{self.table_name_apartments_details}
                         (
                             ApartmentDetailId		INT IDENTITY(1,1) PRIMARY KEY,
-                            MonthlyChargeInSek		MONEY NOT NULL,
-                            FloorNumber				DECIMAL(9,2) NOT NULL,
-                            BuiltYear				INT NOT NULL,
-                            Association				VARCHAR(100) NOT NULL,
+                            MonthlyChargeInSek		MONEY NULL,
+                            OperatingCostInSek      MONEY NULL,
+                            FloorNumber				DECIMAL(9,2) NULL,
+                            BuiltYear				INT NULL,
+                            Association				VARCHAR(100) NULL,
                             ObjectLink				VARCHAR(100) NOT NULL
                         );"""
 
@@ -171,6 +173,7 @@ class soldApartmentsDetails(soldApartments):
                         WHEN NOT MATCHED THEN INSERT
                         (
                             MonthlyChargeInSek,
+                            OperatingCostInSek,
                             FloorNumber,
                             BuiltYear,
                             Association,
@@ -179,6 +182,7 @@ class soldApartmentsDetails(soldApartments):
                         VALUES
                         (
                             S.MonthlyChargeInSek,
+                            S.OperatingCostInSek,
                             S.FloorNumber,
                             S.BuiltYear,
                             S.Association,
@@ -197,12 +201,13 @@ class soldApartmentsDetails(soldApartments):
                         INSERT INTO #{self.table_name_apartments_details} VALUES 
                     """
         for i, item in enumerate(df.values.tolist()):
-            query_insert_into_temp_table += "('" + \
+            query_insert_into_temp_table += "(" + \
                                             str(item[0]) + \
-                                            "','" + str(item[1]) + \
-                                            "','" + str(item[2]) +  \
-                                            "','" + str(item[3]) +  \
-                                            "','" + str(item[4]) +  \
+                                            "," + str(item[1]) + \
+                                            "," + str(item[2]) +  \
+                                            "," + str(item[3]) +  \
+                                            ",'" + str(item[4]) +  \
+                                            "','" + str(item[5]) +  \
                                             "')"
             if i < len(df.values.tolist())-1:
                 query_insert_into_temp_table += ","
