@@ -2,18 +2,19 @@ import booli_scrape as scraper
 import booli_sql as bsql
 
 if __name__ == "__main__":
-    scrape = scraper.BooliApartments('2020-06-03', '2020-06-01')
-    sql = bsql.soldApartments()
     cnxn, cursor = sql.connect()
-
-    links = scrape.get_page_links()
+    scrape = scraper.BooliApartments()
+    
+    links = scrape_apartments.get_page_links('2020-09-18', '2020-01-01')
     print(f'Number of pages to scrape are: {len(links)}')
     
     run_time = 0
+    
+    run_time = 0
     for link in links:
-        html_lists = scrape.scrape_html(link)
+        html_lists = scrape.scrape_html_apartments(link)
         object_links = scrape.get_object_links_from_html_lists(html_lists)
-        run_time += scrape.sleeper(i = 1)
+        run_time += scrape.sleeper(random.randint(3,5), i = 1)
 
         objects = scrape.get_objects_from_html_lists(html_lists)
         objects = scrape.remove_empty_values_from_objects(objects)
