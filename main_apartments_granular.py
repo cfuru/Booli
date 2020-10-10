@@ -12,14 +12,12 @@ if __name__ == "__main__":
     scrape_apartments = scraper.BooliApartments()
     scrape_apartments_granular = scraper.BooliApartmentsGranular()
     
-    links = scrape_apartments.get_page_links('2020-09-18', '2020-01-01')
+    links = scrape_apartments.get_page_links('2020-12-31', '2019-01-01')
     print(f'Number of pages to scrape are: {len(links)}')
     
     run_time = 0
 
-    
-
-    for link in links[44:]:
+    for link in links:
         df_object_details_master = pd.DataFrame({'Avgift': [], 'Driftskostnad': [], 'Våning': [], 'Byggår': [], 'BRF': [], 'Link': []})
 
         html_lists = scrape_apartments.scrape_html_apartments(link)
@@ -43,10 +41,7 @@ if __name__ == "__main__":
             df_object_details = scrape_apartments_granular.create_pandas_dataframe([object_details_values], object_details_headers, details_link)
             df_object_details = scrape_apartments_granular.clean_df_col_monthlyCharge_operatingCost_floorNumber(df_object_details)
             df_object_details = scrape_apartments_granular.clean_df_col_floorNumber(df_object_details)
-            try:
-                df_object_details_master = df_object_details_master.append(df_object_details[df_object_details.columns.intersection(df_object_details_master.columns)])
-            except:
-                pass
+            df_object_details_master = df_object_details_master.append(df_object_details[df_object_details.columns.intersection(df_object_details_master.columns)])
 
         sql.merge_details(df_object_details_master.fillna('NULL'), cnxn, cursor)
         
