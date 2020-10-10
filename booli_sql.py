@@ -203,11 +203,11 @@ class soldApartmentsDetails(soldApartments):
         for i, item in enumerate(df.values.tolist()):
             query_insert_into_temp_table += "(" + \
                                             str(item[0]) + \
-                                            "," + str(item[1]) + \
+                                            "," + str(item[3]) + \
+                                            "," + str(item[5]) +  \
                                             "," + str(item[2]) +  \
-                                            "," + str(item[3]) +  \
-                                            ",'" + str(item[4]) +  \
-                                            "','" + str(item[5]) +  \
+                                            ",'" + str(item[1]) +  \
+                                            "','" + str(item[4]) +  \
                                             "')"
             if i < len(df.values.tolist())-1:
                 query_insert_into_temp_table += ","
