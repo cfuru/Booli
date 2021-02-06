@@ -32,6 +32,8 @@ class BooliApartments:
         
         self.df_scraped_cols = ['Growth', 'Address', 'RoomM2', 'TypeRegion', 'InitialPrice', 'PricePerM2', 'DateSold']
         
+        self.df_upcoming_scraped_cols = ['Address', 'RoomM2', 'TypeRegion', 'InitialPrice', 'PricePerM2', 'CostPerMonth']
+
         self.df_cols = [self.df_col_growth, 
                         self.df_col_address, 
                         self.df_col_rooms, 
@@ -83,8 +85,8 @@ class BooliApartments:
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) \
                             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.3'}
 
-    def get_page_numbers(self, url_sold_apartments, MAX_OBJECTS_PER_PAGE = 34):
-        page = requests.get(url_sold_apartments)
+    def get_page_numbers(self, url, MAX_OBJECTS_PER_PAGE = 34):
+        page = requests.get(url)
         soup = BeautifulSoup(page.content, 'lxml')
         data = soup.find_all('div', class_ = 'search-list__pagination-summary')
 
@@ -94,13 +96,19 @@ class BooliApartments:
             number_of_objects = 0
 
         number_of_pages = int(np.ceil(number_of_objects/MAX_OBJECTS_PER_PAGE))
-        
+        print(number_of_objects)
+        print(url)
         return number_of_pages
 
-    def get_page_links(self, max_sold_date, min_sold_date):
+    def get_sold_page_links(self, max_sold_date, min_sold_date):
         url_sold_apartments = self.base_url + '/slutpriser/' + self.region + '/' + self.region_id + '/?maxSoldDate=' + max_sold_date + '&minSoldDate=' + min_sold_date + '&objectType=Lägenhet'
         page_numbers = self.get_page_numbers(url_sold_apartments)
         return [url_sold_apartments + f'&page={i}' for i in range(1, page_numbers)]
+
+    def get_upcoming_page_links(self):
+        url_upcoming_apartments = self.base_url + '/' + self.region + '/' + self.region_id + '?objectType=Lägenhet&rooms=3&upcomingSale='
+        page_numbers = self.get_page_numbers(url_upcoming_apartments)
+        return [url_upcoming_apartments + f'&page={i}' for i in range(1, page_numbers)]
 
     def scrape_html_apartments(self, link):
         '''
@@ -121,17 +129,28 @@ class BooliApartments:
         time.sleep(seconds)
         return time.time() - start_time
 
-    def get_object_links_from_html_lists(self, html_lists):
+    def get_sold_object_links_from_html_lists(self, html_lists):
         return [self.base_url + object.a.get('href') for object in html_lists if len(object.text.split("\n")) <= 17]
+
+    def get_upcoming_object_links_from_html_lists(self, html_lists):
+        return [self.base_url + '/annons/' + object.a.get('data-listing-id') for object in html_lists if object.a.get('data-type') == 'listings']
 
     def get_objects_from_html_lists(self, html_lists):
         return [object.text.split("\n") for object in html_lists if len(object.text.split("\n")) <= 17]
-        
+
+    def get_upcoming_objects_from_html_lists(self, html_lists):
+        return [object.text.split("\n") for object in html_lists if object.a.get('data-type') == 'listings']
+
     def remove_empty_values_from_objects(self, objects):
         return [[objects[i][j] for j in range(0, len(objects[i])) if objects[i][j] != ''] for i in range(0, len(objects))]
 
     def create_pandas_dataframe(self, objects, object_links):
         df = pd.DataFrame(objects, columns = self.df_scraped_cols)
+        df[self.df_col_link] = object_links
+        return df 
+
+    def create_upcoming_pandas_dataframe(self, objects, object_links):
+        df = pd.DataFrame(objects, columns = self.df_upcoming_scraped_cols)
         df[self.df_col_link] = object_links
         return df 
 
